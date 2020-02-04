@@ -2,7 +2,7 @@
 
 A VIN decoding library using the National Highway Traffic Safety Administration (NHTSA) vPIC API.
 
-> **NOTE:** The API is only minimally implemented because the project that spawned this library does not have a need for anything but the year, make and model of a vehicle. I will revisit and complete this library in the future, I just wanted to separate it out a NuGet package for now.
+> **NOTE:** The API is only minimally implemented because the project that spawned this library does not have a need for anything but the year, make and model of a vehicle. I will revisit and complete this library in the future, I just wanted to separate it out as a NuGet package for now.
 
 To use create a new instance of `NhtsaVpicClient` and pass in an instance of `HttpClient`. The original API documentation can be found [here](https://vpic.nhtsa.dot.gov/api/).
 
