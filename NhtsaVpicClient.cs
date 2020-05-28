@@ -1,112 +1,148 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Arex388.NhtsaVpic {
-	public sealed class NhtsaVpicClient {
-		private HttpClient HttpClient { get; }
+    public sealed class NhtsaVpicClient {
+        /// <summary>
+        /// Is debugging enabled.
+        /// </summary>
+        private readonly bool _debug;
 
-		public NhtsaVpicClient(
-			HttpClient httpClient) => HttpClient = httpClient;
+        /// <summary>
+        /// An instance of HttpClient.
+        /// </summary>
+        private readonly HttpClient _httpClient;
 
-		public Task<DecodeResponse> GetDecodeAsync(
-			string vin) => GetDecodeAsync(new DecodeRequest {
-				Vin = vin
-			});
+        /// <summary>
+        /// NHTSA vPIC API client.
+        /// </summary>
+        /// <param name="httpClient">An instance of HttpClient.</param>
+        /// <param name="debug">Toggle capturing the raw JSON response from NHTSA vPIC and returning it as part of the deserialized response object.</param>
+        public NhtsaVpicClient(
+            HttpClient httpClient,
+            bool debug = false) {
+            _debug = debug;
+            _httpClient = httpClient;
+        }
 
-		public async Task<DecodeResponse> GetDecodeAsync(
-			DecodeRequest request) {
-			if (request is null) {
-				return ResponseBase.Invalid<DecodeResponse>();
-			}
+        /// <summary>
+        /// Decode a VIN.
+        /// </summary>
+        /// <param name="vin">The VIN to decode.</param>
+        /// <returns>A DecodeResponse.</returns>
+        public Task<DecodeResponse> DecodeAsync(
+            string vin) => DecodeAsync(new DecodeRequest {
+                Vin = vin
+            });
 
-			var response = await GetResponseAsync(request);
+        /// <summary>
+        /// Decode a VIN.
+        /// </summary>
+        /// <param name="request">A DecodeRequest instance.</param>
+        /// <returns>A DecodeResponse.</returns>
+        public async Task<DecodeResponse> DecodeAsync(
+            DecodeRequest request) {
+            if (request is null) {
+                return NullRequestResponse<DecodeResponse>();
+            }
 
-			return JsonConvert.DeserializeObject<DecodeResponseWrapper>(response).Results.SingleOrDefault();
-		}
+            var response = await GetResponseAsync(request).ConfigureAwait(false);
+            var responseObj = JsonConvert.DeserializeObject<DecodeResponseWrapper>(response).Results.Single();
 
-		public Task<IEnumerable<DecodeResponse>> GetDecodeBatchAsync(
-			IEnumerable<string> vins) => GetDecodeBatchAsync(new DecodeBatchRequest {
-				Vins = vins
-			});
+            if (_debug) {
+                responseObj.Json = response;
+            }
 
-		public async Task<IEnumerable<DecodeResponse>> GetDecodeBatchAsync(
-			DecodeBatchRequest request) {
-			if (request is null) {
-				return new[] {
-					ResponseBase.Invalid<DecodeResponse>()
-				};
-			}
+            return responseObj;
+        }
 
-			var response = await GetResponseAsync(request);
+        /// <summary>
+        /// Decode a batch of VINs.
+        /// </summary>
+        /// <param name="vins">The VINs to decode.</param>
+        /// <returns>A DecodeResponse collection.</returns>
+        public Task<IEnumerable<DecodeResponse>> DecodeBatchAsync(
+            IEnumerable<string> vins) => DecodeBatchAsync(new DecodeBatchRequest {
+                Vins = vins
+            });
 
-			return JsonConvert.DeserializeObject<DecodeResponseWrapper>(response).Results;
-		}
+        /// <summary>
+        /// Decode a batch of VINs.
+        /// </summary>
+        /// <param name="request">A DecodeBatchRequest instance.</param>
+        /// <returns>A DecodeResponse collection.</returns>
+        public async Task<IEnumerable<DecodeResponse>> DecodeBatchAsync(
+            DecodeBatchRequest request) {
+            if (request is null) {
+                return new[] {
+                    NullRequestResponse<DecodeResponse>()
+                };
+            }
 
-		//public async Task<object> GetMakes() {
-		//	var response = await GetResponseAsync(new GetMakesRequest());
+            var response = await GetResponseAsync(request).ConfigureAwait(false);
+            var responseObjs = JsonConvert.DeserializeObject<DecodeResponseWrapper>(response).Results.ToList();
 
-		//	Console.Write(response);
+            if (_debug) {
+                foreach (var responseObj in responseObjs) {
+                    responseObj.Json = response;
+                }
+            }
 
-		//	return null;
-		//}
+            return responseObjs;
+        }
 
-		//public async Task<IEnumerable<GetManufacturersResponse>> GetManufacturers() {
-		//	var response = await GetResponseAsync(new GetManufacturersRequest());
+        //	========================================================================
+        //  Response
+        //  ========================================================================
 
-		//	return JsonConvert.DeserializeObject<GetManufacturersResponseWrapper>(response).Results;
-		//}
+        private async Task<string> GetResponseAsync(
+            RequestBase request) {
+            var endpoint = $"https://vpic.nhtsa.dot.gov/api/{request.Endpoint}";
 
-		//	========================================================================
+            try {
+                if (request.Method == HttpMethod.Get) {
+                    return await GetGetResponseAsync(endpoint).ConfigureAwait(false);
+                }
 
-		private async Task<string> GetResponseAsync(
-			RequestBase request) {
-			var endpoint = $"https://vpic.nhtsa.dot.gov/api/{request.Endpoint}";
+                return await GetPostResponseAsync(request, endpoint).ConfigureAwait(false);
+            } catch (HttpRequestException e) {
+                var error = $"{e.Message}\n{e.InnerException?.Message}".Trim();
 
-			try {
-				if (request.Method == HttpMethod.Get) {
-					return await GetGetResponseAsync(endpoint);
-				}
+                return $"{{\"ErrorCode\":\"2147483647\",\"ErrorText\":\"{error}\"}}";
+            } catch (TaskCanceledException) {
+                return "{{\"ErrorCode\":\"2147483647\",\"ErrorText\":\"The request has timed out.\"}}";
+            }
+        }
 
-				return await GetPostResponseAsync(request, endpoint);
-			} catch (HttpRequestException) {
-				return null;
-			}
-		}
+        private async Task<string> GetGetResponseAsync(
+            string endpoint) {
+            var response = await _httpClient.GetAsync(endpoint).ConfigureAwait(false);
 
-		private async Task<string> GetGetResponseAsync(
-			string endpoint) {
-			var response = await HttpClient.GetAsync(endpoint);
+            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        }
 
-#if DEBUG
-			var responseContent = await response.Content.ReadAsStringAsync();
+        private async Task<string> GetPostResponseAsync(
+            RequestBase request,
+            string endpoint) {
+            using var content = new FormUrlEncodedContent(request.FormData);
+            using var response = await _httpClient.PostAsync(endpoint, content).ConfigureAwait(false);
 
-			Console.Write(responseContent);
+            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        }
 
-			return responseContent;
-#else
-			return await response.Content.ReadAsStringAsync();
-#endif
-		}
+        //  ========================================================================
+        //  Utilities
+        //  ========================================================================
 
-		private async Task<string> GetPostResponseAsync(
-			RequestBase request,
-			string endpoint) {
-			using var content = new FormUrlEncodedContent(request.FormData);
-			using var response = await HttpClient.PostAsync(endpoint, content);
-
-#if DEBUG
-			var responseContent = await response.Content.ReadAsStringAsync();
-
-			Console.Write(responseContent);
-
-			return responseContent;
-#else
-			return await response.Content.ReadAsStringAsync();
-#endif
-		}
-	}
+        /// <summary>
+        /// A failure due to a null request.
+        /// </summary>
+        /// <typeparam name="T">The response type.</typeparam>
+        /// <returns>T</returns>
+        private static T NullRequestResponse<T>()
+            where T : ResponseBase, new() => ResponseBase.Invalid<T>();
+    }
 }

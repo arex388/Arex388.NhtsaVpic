@@ -10,14 +10,15 @@ Available as a NuGet package [here]().
 
 ```c#
 var nhtsaVpic = new NhtsaVpicClient(
-    httpClient
+    httpClient,
+    //	debug = true/false
 );
 ```
 
 #### Decode
 
 ```c#
-var response = await nhtsaVpic.GetDecodeAsync(
+var response = await nhtsaVpic.DecodeAsync(
     "VIN"
 );
 ```
@@ -25,7 +26,7 @@ var response = await nhtsaVpic.GetDecodeAsync(
 #### Decode Batch
 
 ```C#
-var response = await nhtsaVpic.GetDecodeBatchAsync(
+var response = await nhtsaVpic.DecodeBatchAsync(
     "VIN1",
     "VIN2",
     ...

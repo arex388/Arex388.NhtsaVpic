@@ -2,37 +2,54 @@
 using System.Collections.Generic;
 
 namespace Arex388.NhtsaVpic {
-	public class ResponseBase {
-		private const int ZeroErrorCode = 0;
+    public class ResponseBase {
+        [JsonProperty("ErrorCode")]
+        private string ErrorCode { get; set; }
 
-		[JsonProperty("ErrorCode")]
-		private int ErrorCode { get; set; }
+        [JsonProperty("ErrorText")]
+        private string ErrorText { get; set; }
 
-		[JsonProperty("ErrorText")]
-		private string ErrorText { get; set; }
+        /// <summary>
+        /// The error message if the response failed.
+        /// </summary>
+        public string Error {
+            get {
+                if (Success) {
+                    return null;
+                }
 
-		public string Error {
-			get {
-				if (Success) {
-					return null;
-				}
+                var errorText = ErrorText.Replace($"{ErrorCode} - ", null).Trim();
 
-				var errorText = ErrorText.Replace($"{ErrorCode} - ", null).Trim();
+                if (!errorText.HasValue()) {
+                    return null;
+                }
 
-				if (!errorText.HasValue()) {
-					return null;
-				}
+                return errorText;
+            }
+        }
 
-				return errorText;
-			}
-		}
+        /// <summary>
+        /// The raw JSON of the response for debugging.
+        /// </summary>
+        [JsonIgnore]
+        public string Json { get; set; }
 
-		public bool Success => ErrorCode == ZeroErrorCode;
+        /// <summary>
+        /// Was the request successful or not.
+        /// </summary>
+        public bool Success => ErrorCode == "0";
 
-		public static T Invalid<T>()
-			where T : ResponseBase, new() => new T {
-				ErrorCode = int.MaxValue,
-				ErrorText = "The request is invalid."
-			};
-	}
+        /// <summary>
+        /// An invalid response instance with an optinal error message.
+        /// </summary>
+        /// <typeparam name="T">The response type.</typeparam>
+        /// <param name="error">The error message (optional).</param>
+        /// <returns>T</returns>
+        public static T Invalid<T>(
+            string error = null)
+            where T : ResponseBase, new() => new T {
+                ErrorCode = "2147483647",
+                ErrorText = error ?? "The request is invalid."
+            };
+    }
 }

@@ -6,6 +6,9 @@
     <Description>A C# client for the NHTSA vPIC API.</Description>
     <PackageProjectUrl>https://github.com/arex388/Arex388.NhtsaVpic</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arex388/Arex388.NhtsaVpic</RepositoryUrl>
+    <Version>1.0.3</Version>
+    <Authors>Arex388</Authors>
+    <PackageTags>vin vin-decoder nhtsavpic arex388</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -14,10 +17,11 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <DocumentationFile>E:\Software Development\Arex388\Arex388.NhtsaVpic\Arex388.NhtsaVpic.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Humanizer.Core" Version="2.7.9" />
+    <PackageReference Include="Humanizer.Core" Version="2.8.11" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 

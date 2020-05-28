@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Arex388.NhtsaVpic</name>
+    </assembly>
+    <members>
+        <member name="P:Arex388.NhtsaVpic.DecodeResponse.Make">
+            <summary>
+            The vehicle's make.
+            </summary>
+        </member>
+        <member name="P:Arex388.NhtsaVpic.DecodeResponse.Model">
+            <summary>
+            The vehicle's model.
+            </summary>
+        </member>
+        <member name="P:Arex388.NhtsaVpic.DecodeResponse.ModelYear">
+            <summary>
+            The vehicle's year.
+            </summary>
+        </member>
+        <member name="P:Arex388.NhtsaVpic.ResponseBase.Error">
+            <summary>
+            The error message if the response failed.
+            </summary>
+        </member>
+        <member name="P:Arex388.NhtsaVpic.ResponseBase.Json">
+            <summary>
+            The raw JSON of the response for debugging.
+            </summary>
+        </member>
+        <member name="P:Arex388.NhtsaVpic.ResponseBase.Success">
+            <summary>
+            Was the request successful or not.
+            </summary>
+        </member>
+        <member name="M:Arex388.NhtsaVpic.ResponseBase.Invalid``1(System.String)">
+            <summary>
+            An invalid response instance with an optinal error message.
+            </summary>
+            <typeparam name="T">The response type.</typeparam>
+            <param name="error">The error message (optional).</param>
+            <returns>T</returns>
+        </member>
+        <member name="F:Arex388.NhtsaVpic.NhtsaVpicClient._debug">
+            <summary>
+            Is debugging enabled.
+            </summary>
+        </member>
+        <member name="F:Arex388.NhtsaVpic.NhtsaVpicClient._httpClient">
+            <summary>
+            An instance of HttpClient.
+            </summary>
+        </member>
+        <member name="M:Arex388.NhtsaVpic.NhtsaVpicClient.#ctor(System.Net.Http.HttpClient,System.Boolean)">
+            <summary>
+            NHTSA vPIC API client.
+            </summary>
+            <param name="httpClient">An instance of HttpClient.</param>
+            <param name="debug">Toggle capturing the raw JSON response from NHTSA vPIC and returning it as part of the deserialized response object.</param>
+        </member>
+        <member name="M:Arex388.NhtsaVpic.NhtsaVpicClient.DecodeAsync(System.String)">
+            <summary>
+            Decode a VIN.
+            </summary>
+            <param name="vin">The VIN to decode.</param>
+            <returns>A DecodeResponse.</returns>
+        </member>
+        <member name="M:Arex388.NhtsaVpic.NhtsaVpicClient.DecodeAsync(Arex388.NhtsaVpic.DecodeRequest)">
+            <summary>
+            Decode a VIN.
+            </summary>
+            <param name="request">A DecodeRequest instance.</param>
+            <returns>A DecodeResponse.</returns>
+        </member>
+        <member name="M:Arex388.NhtsaVpic.NhtsaVpicClient.DecodeBatchAsync(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Decode a batch of VINs.
+            </summary>
+            <param name="vins">The VINs to decode.</param>
+            <returns>A DecodeResponse collection.</returns>
+        </member>
+        <member name="M:Arex388.NhtsaVpic.NhtsaVpicClient.DecodeBatchAsync(Arex388.NhtsaVpic.DecodeBatchRequest)">
+            <summary>
+            Decode a batch of VINs.
+            </summary>
+            <param name="request">A DecodeBatchRequest instance.</param>
+            <returns>A DecodeResponse collection.</returns>
+        </member>
+        <member name="M:Arex388.NhtsaVpic.NhtsaVpicClient.NullRequestResponse``1">
+            <summary>
+            A failure due to a null request.
+            </summary>
+            <typeparam name="T">The response type.</typeparam>
+            <returns>T</returns>
+        </member>
+    </members>
+</doc>
