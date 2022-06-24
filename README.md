@@ -6,6 +6,8 @@ A VIN decoding library using the National Highway Traffic Safety Administration 
 
 To use create a new instance of `NhtsaVpicClient` and pass in an instance of `HttpClient`. The original API documentation can be found [here](https://vpic.nhtsa.dot.gov/api/).
 
+For dependency injection use the `Arex388.NhtsaVpic.Extensions.Microsoft.DependencyInjection`. NuGet package with the `AddNhtsaVpic()` extension method. This will register `INhtsaVpicClient` to `NhtsaVpicClient`. Use `INhtsaVpicClient` interface in your code.
+
 Available as a NuGet package [here]().
 
 ```c#
